@@ -1,0 +1,25 @@
+.ButtonNavLink {
+  background-color: #4167b2;
+  color: white;
+  padding: 7px 16px;
+  margin-bottom: 10px;
+  text-align: center;
+  border-radius: 5px;
+  text-decoration: none;
+  display: inline-block;
+  font-weight: bold;
+}
+
+.ButtonNavLink:hover {
+    background-color: #5789ED;
+  }
+
+.ButtonNavLink div {
+  display: flex;
+  align-items: center;
+}
+
+.ButtonNavLink .react-icons {
+    font-size: 24px;
+    margin-right: 5px;
+}

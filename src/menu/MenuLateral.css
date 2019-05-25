@@ -1,0 +1,46 @@
+.Menu {
+  display: flex;
+  background-color: #fff;
+  align-items: flex-start;
+  flex-flow: column nowrap;
+}
+
+.NavLink {
+  width: 100%;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+}
+
+.NavLink div {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+}
+
+.NavLink div span {
+  padding-left: 8px;
+}
+
+.NavLink:focus {
+  text-decoration: none;
+}
+
+.NavLink:hover:not(.ActiveLink) {
+  color: #9cb7ce;
+}
+
+.NavLink:hover:not(.ActiveLink) .react-icons {
+  color: #40a9ff;
+}
+
+.ActiveLink div {
+  width: 100%;
+  border-radius: 4px;
+  background-color: #40a9ff;
+  color: #fff;
+}
+
+.ActiveLink .icon {
+  color: #fff;
+}

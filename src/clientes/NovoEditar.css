@@ -1,0 +1,29 @@
+.Content {
+  display: flex;
+}
+
+.ContentVertical {
+  display: flex;
+  flex-direction: column
+}
+
+.Card1 {
+  flex-basis: 100%;
+  margin: 16px;
+}
+
+.Card2 {
+  flex-basis: 100%;
+  margin: 16px;
+}
+
+.NovoEditarForm {
+  display: flex;
+  flex-direction: column;
+}
+
+.LabelTextInput {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 16px;
+}

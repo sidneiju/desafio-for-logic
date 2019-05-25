@@ -1,0 +1,37 @@
+.ContentHeader {
+  margin-left: 20px;
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+}
+
+.ContentIcon {
+  padding: 18px;
+  z-index: 100;
+  border-radius: 4px;
+  background-color: #1890ff;
+  /* background-color: #ffd700; */
+  box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.14), 0 7px 10px -5px #007ad940;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.ContentTitle {
+  font-weight: 500;
+  font-size: 18px;
+  color: #f4f4f4;
+}
+
+.ContentBody {
+  background-color: #fff;
+  margin-top: -45px;
+  border-radius: 6px;
+  padding: 20px;
+  padding-top: 60px;
+  box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.14);
+}
+
+.ContentFooter {
+  margin-top: 14px;
+}
