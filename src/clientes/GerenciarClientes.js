@@ -3,7 +3,7 @@ import Cartao from "../componentes/Cartao";
 import { Table, Icon, Popconfirm, message, Tag } from "antd";
 import BotaoEditarTabela from "../componentes/BotaoEditarTabela";
 import Botao from "../componentes/Botao";
-import ClienteApi from "../api/ClienteApi";
+import Api from "../api/Api";
 import "./GerenciarClientes.css";
 
 /*
@@ -25,11 +25,13 @@ class GerenciarCliente extends React.Component {
       searchText: "", // Variável de texto para ser usada no campo de busca
       loading: false // Variável que indica se a tabela está sendo carregada com os dados
     };
+
+    Api.url = "http://desafio4devs.forlogic.net/api/customers/";
   }
 
   componentDidMount() {
     this.setState({ loading: true });
-    ClienteApi.getAll(this.cb_ok, this.cb_erro);
+    Api.buscarTodos(this.cb_ok, this.cb_erro);
   }
 
   cb_ok = data => {
@@ -59,7 +61,7 @@ class GerenciarCliente extends React.Component {
   handleDelete = _id => {
     message.loading("Em progresso", 0);
     const data = [...this.state.data];
-    ClienteApi.excluir(
+    Api.excluir(
       _id,
       () => {
         this.setState(
@@ -99,22 +101,6 @@ class GerenciarCliente extends React.Component {
         />
       </div>
     );
-  }
-
-  criarTagCategoria(categoria) {
-    let nome = "Nenhum";
-    let color = "gold";
-    if (categoria >= 0 && categoria <= 6) {
-      nome = "Detrator";
-      color = "red";
-    }else if(categoria >= 7 && categoria <= 8){
-      nome = "Neutro";
-      color = "blue";
-    }else if(categoria >= 9 && categoria <= 10){
-      nome = "Promotor";
-      color = "green";
-    }
-    return <Tag color={color}>{nome}</Tag>;
   }
 
   /*
@@ -191,6 +177,22 @@ class GerenciarCliente extends React.Component {
         Adicionar
       </Botao>
     );
+  }
+
+  criarTagCategoria(categoria) {
+    let nome = "Nenhum";
+    let color = "gold";
+    if (categoria >= 0 && categoria <= 6) {
+      nome = "Detrator";
+      color = "red";
+    } else if (categoria >= 7 && categoria <= 8) {
+      nome = "Neutro";
+      color = "blue";
+    } else if (categoria >= 9 && categoria <= 10) {
+      nome = "Promotor";
+      color = "green";
+    }
+    return <Tag color={color}>{nome}</Tag>;
   }
 }
 

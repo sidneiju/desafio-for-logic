@@ -2,7 +2,7 @@ import React from "react";
 import { Form, Input, Button, message, Icon, Spin } from "antd";
 import { Redirect } from "react-router";
 import Cartao from "../componentes/Cartao";
-import ClienteApi from "../api/ClienteApi";
+import Api from "../api/Api";
 import "./NovoEditar.css";
 
 class NovoEditarCliente extends React.Component {
@@ -18,13 +18,15 @@ class NovoEditarCliente extends React.Component {
       redirect: false,
       loading: false
     };
+
+    Api.url = "http://desafio4devs.forlogic.net/api/customers/";
   }
 
   componentWillMount() {
     if (this.editar) {
       this.setState({ loading: true });
       const { _id } = this.props.match.params;
-      ClienteApi.get(
+      Api.buscar(
         _id,
         cliente => {
           this.setState({ loading: false, cliente });
@@ -39,12 +41,12 @@ class NovoEditarCliente extends React.Component {
   }
 
   salvar(cliente) {
-    ClienteApi.salvar(cliente, this.cb_ok, this.cb_erro);
+    Api.salvar(cliente, this.cb_ok, this.cb_erro);
   }
 
   alterar(cliente) {
     const { _id } = this.props.match.params;
-    ClienteApi.alterar(_id, cliente, this.cb_ok, this.cb_erro);
+    Api.alterar(_id, cliente, this.cb_ok, this.cb_erro);
   }
 
   cb_ok = data => {
@@ -171,7 +173,7 @@ class NovoEditarCliente extends React.Component {
             </Form.Item>
             <Form.Item
               {...formItemLayout}
-              label="Contato:"
+              label="Contato"
               style={{ marginBottom: "0px" }}
             >
               {getFieldDecorator("contato", {
@@ -192,7 +194,7 @@ class NovoEditarCliente extends React.Component {
                 />
               )}
             </Form.Item>
-            <Form.Item {...formItemLayout} label="Data de Ingresso:">
+            <Form.Item {...formItemLayout} label="Data de Ingresso">
               {getFieldDecorator("dataCadastro", {
                 initialValue: cliente.dataCadastro,
                 rules: [
