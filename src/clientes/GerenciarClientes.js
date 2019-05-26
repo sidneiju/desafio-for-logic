@@ -1,7 +1,8 @@
 import React from "react";
 import Cartao from "../componentes/Cartao";
-import { Table, Icon, Popconfirm, message, Tag } from "antd";
+import { Table, Icon, Popconfirm, message } from "antd";
 import BotaoEditarTabela from "../componentes/BotaoEditarTabela";
+import TagCategoria from "../componentes/TagCategoria";
 import Botao from "../componentes/Botao";
 import Api from "../api/Api";
 import "./GerenciarClientes.css";
@@ -123,7 +124,7 @@ class GerenciarCliente extends React.Component {
         title: "CATEGORIA",
         dataIndex: "categoria",
         width: "20%",
-        render: categoria => this.criarTagCategoria(categoria)
+        render: categoria => <TagCategoria categoria={categoria} />
       },
       {
         title: "DATA CADASTRO",
@@ -177,22 +178,6 @@ class GerenciarCliente extends React.Component {
         Adicionar
       </Botao>
     );
-  }
-
-  criarTagCategoria(categoria) {
-    let nome = "Nenhum";
-    let color = "gold";
-    if (categoria >= 0 && categoria <= 6) {
-      nome = "Detrator";
-      color = "red";
-    } else if (categoria >= 7 && categoria <= 8) {
-      nome = "Neutro";
-      color = "blue";
-    } else if (categoria >= 9 && categoria <= 10) {
-      nome = "Promotor";
-      color = "green";
-    }
-    return <Tag color={color}>{nome}</Tag>;
   }
 }
 

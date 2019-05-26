@@ -1,10 +1,16 @@
 import React from "react";
-import { Form, Button, message, Spin, DatePicker, Table, Select } from "antd";
+import { Form, Button, message, Spin, DatePicker, Table, Icon } from "antd";
+import TagCategoria from "../componentes/TagCategoria";
 import { Redirect } from "react-router";
 import Cartao from "../componentes/Cartao";
 import Api from "../api/Api";
 import locale from "antd/lib/date-picker/locale/pt_BR";
+import moment from "moment";
+import "moment/locale/pt-br";
 import "../clientes/NovoEditar.css";
+import AvaliacaoForm from "./AvaliacaoForm";
+import { existsTypeAnnotation } from "@babel/types";
+moment.locale("pt-br");
 
 const { MonthPicker } = DatePicker;
 
@@ -15,9 +21,12 @@ class NovaAvaliacao extends React.Component {
     this.state = {
       avaliacao: {},
       clientes: [],
-      selectedItems: [],
+      selectedRowKeys: [],
+      selectedRow: [],
+      dataSelected: moment().format(),
       redirect: false,
-      loading: false
+      loading: false,
+      etapa: 1
     };
 
     Api.url = "http://desafio4devs.forlogic.net/api/evaluations/";
@@ -56,27 +65,88 @@ class NovaAvaliacao extends React.Component {
     message.error("Erro ao salvar Avaliação.");
   };
 
-  handleSelectChange = selectedItems => {
-    this.setState({ selectedItems });
+  clientesMax = () => {
+    return Math.ceil(this.state.clientes.length * 0.2);
+  };
+
+  desativarCliente = cliente => {
+    const { dataSelected } = this.state;
+    if (cliente.ultimaAvaliacao === "") {
+      return false;
+    }
+    let ultimaMais2 = moment(cliente.ultimaAvaliacao, "MM/YYYY")
+      .add(2, "month")
+      .format("MM/YYYY");
+    return moment(ultimaMais2, "MM/YYYY").isSameOrAfter(dataSelected);
+  };
+
+  onSelectChange = (selectedRowKeys, selectedRow) => {
+    if (selectedRowKeys.length > this.clientesMax()) {
+      message.destroy();
+      message.warning("Limite máximo de Clientes atingido.");
+    } else {
+      this.setState({ selectedRowKeys, selectedRow });
+    }
+  };
+
+  handleSubmit = e => {
+    e.preventDefault();
+    const { selectedRowKeys, selectedRow } = this.state;
+    this.props.form.validateFields((err, values) => {
+      if (!err) {
+        if (selectedRowKeys.length === this.clientesMax()) {
+          this.setState({
+            avaliacao: {
+              clientes: selectedRow,
+              data: values.data,
+              resultado: 0
+            },
+            etapa: 2
+          });
+        } else {
+          message.destroy();
+          message.error(
+            "É necessário selecionar 20% dos clientes cadastrados."
+          );
+        }
+      } else {
+        message.destroy();
+        message.error("Mês e Ano de referência não selecionado.");
+      }
+    });
   };
 
   render() {
+    const { etapa } = this.state;
     if (this.state.redirect) {
       return <Redirect to="/avaliacoes" />;
     }
-    return (
-      <div className="Content">
-        <Cartao
-          className="Card1"
-          title="Cadastro de Avaliação"
-          body={this.renderBody()}
-          footer={this.renderFooter()}
-        />
-      </div>
-    );
+    if (etapa === 1) {
+      return (
+        <div className="Content">
+          <Cartao
+            className="Card1"
+            title="Cadastro de Avaliação"
+            body={this.renderBodyEtapa1()}
+            footer={this.renderFooterEtapa1()}
+          />
+        </div>
+      );
+    } else {
+      return (
+        <div className="Content">
+          <Cartao
+            className="Card1"
+            title="Avaliação em Andamento"
+            body={this.renderBodyEtapa2()}
+            footer={this.renderFooterEtapa2()}
+          />
+        </div>
+      );
+    }
   }
 
-  renderBody() {
+  renderBodyEtapa1() {
     const { getFieldDecorator } = this.props.form;
 
     return (
@@ -96,18 +166,29 @@ class NovaAvaliacao extends React.Component {
                   format="MM/YYYY"
                   locale={locale}
                   placeholder="Selecione o mês"
+                  onChange={value =>
+                    this.setState({
+                      dataSelected: value,
+                      selectedRow: [],
+                      selectedRowKeys: []
+                    })
+                  }
                 />
               )}
             </Form.Item>
           </Form>
-          {this.renderTable()}
-          {this.renderSelect()}
+          <span>
+            <span style={{ color: "red" }}>* </span>Selecione os clientes que
+            participaram da entrevista (20% do total cadastrado):
+          </span>
+          {this.renderTableEtapa1()}
         </Spin>
       </div>
     );
   }
 
-  renderTable() {
+  renderTableEtapa1() {
+    const { selectedRowKeys, clientes, loading } = this.state;
     const columns = [
       {
         title: "NOME",
@@ -120,6 +201,12 @@ class NovaAvaliacao extends React.Component {
         width: "30%"
       },
       {
+        title: "CATEGORIA",
+        dataIndex: "categoria",
+        width: "20%",
+        render: categoria => <TagCategoria categoria={categoria} />
+      },
+      {
         title: "DATA CADASTRO",
         dataIndex: "dataCadastro",
         width: "10%"
@@ -130,50 +217,105 @@ class NovaAvaliacao extends React.Component {
         width: "10%"
       }
     ];
+
+    const rowSelection = {
+      selectedRowKeys,
+      onChange: (selectedRowKeys, selectedRow) =>
+        this.onSelectChange(selectedRowKeys, selectedRow),
+      getCheckboxProps: cliente => ({
+        disabled: this.desativarCliente(cliente)
+      })
+    };
+
+    const hasSelected = selectedRowKeys.length > 0;
+
     return (
-      <Table
-        rowKey={registro => registro._id}
-        columns={columns}
-        dataSource={this.state.selectedItems}
-        pagination={false}
-        loading={this.state.loading}
-        size="small"
-        style={{ marginBottom: "8px" }}
-      />
+      <div>
+        <span>
+          Clientes:
+          {hasSelected ? ` ${selectedRowKeys.length}/` : " 0/"}
+          {this.clientesMax()}
+          <Icon type={hasSelected ? "check" : " "} style={{ margin: "2px" }} />
+        </span>
+        <Table
+          rowKey={registro => registro._id}
+          columns={columns}
+          dataSource={clientes}
+          rowSelection={rowSelection}
+          pagination={false}
+          loading={loading}
+          size="small"
+          style={{ marginBottom: "8px" }}
+        />
+      </div>
     );
   }
 
-  renderSelect() {
-    const { selectedItems, clientes } = this.state;
-    const filteredOptions = clientes.filter(o => !selectedItems.includes(o));
-    return (
-      <Select
-        mode="multiple"
-        placeholder="Digite o nome do Cliente"
-        value={selectedItems}
-        onChange={this.handleSelectChange}
-        style={{ width: "100%" }}
-      >
-        {filteredOptions.map(item => (
-          <Select.Option key={item._id} value={item.nome}>
-            {item.nome}
-          </Select.Option>
-        ))}
-      </Select>
-    );
-  }
-
-  renderFooter() {
+  renderFooterEtapa1() {
     return (
       <Button
         form="form1"
         type="primary"
         htmlType="submit"
         size="large"
-        icon="check"
+        icon="play-circle"
         disabled={this.state.loading}
       >
-        Salvar
+        Iniciar
+      </Button>
+    );
+  }
+
+  renderBodyEtapa2() {
+    const { avaliacao } = this.state;
+
+    return avaliacao.clientes.map((c, index) => {
+      return (
+        <AvaliacaoForm
+          key={index}
+          cliente={c}
+          atualizarClienteAvaliacao={clienteNovo =>
+            this.atualizarClienteAvaliacao(index, clienteNovo)
+          }
+        />
+      );
+    });
+  }
+
+  atualizarClienteAvaliacao(index, c) {
+    let clientes = this.state.avaliacao.clientes;
+    clientes[index] = c;
+    let avaliacao = {
+      ...this.state.avaliacao,
+      clientes: clientes
+    };
+    this.setState({ avaliacao });
+  }
+
+  finalizarAvaliacao = () => {
+    const { avaliacao } = this.state;
+    if (
+      avaliacao.clientes.filter(c => {
+        return !c.feito;
+      }).length > 0
+    ) {
+      message.destroy();
+      message.error("Preencha todas as avaliações");
+    } else {
+      this.setState({  })
+    }
+  }
+
+  renderFooterEtapa2() {
+    return (
+      <Button
+        type="primary"
+        size="large"
+        icon="check"
+        onClick={this.finalizarAvaliacao}
+        disabled={this.state.loading}
+      >
+        Finalizar
       </Button>
     );
   }
