@@ -9,7 +9,6 @@ import moment from "moment";
 import "moment/locale/pt-br";
 import "../clientes/NovoEditar.css";
 import AvaliacaoForm from "./AvaliacaoForm";
-import { existsTypeAnnotation } from "@babel/types";
 moment.locale("pt-br");
 
 const { MonthPicker } = DatePicker;
@@ -44,11 +43,25 @@ class NovaAvaliacao extends React.Component {
         message.error("Erro ao buscar Clientes");
       }
     );
-    Api.url = "http://desafio4devs.forlogic.net/api/evaluations/";
   }
 
-  salvar(avaliacao) {
+  salvarAvaliacao(avaliacao) {
+    Api.url = "http://desafio4devs.forlogic.net/api/evaluations/";
     Api.salvar(avaliacao, this.cb_ok, this.cb_erro);
+  }
+
+  alterarCliente(id, cliente) {
+    Api.url = "http://desafio4devs.forlogic.net/api/customers/";
+    Api.alterar(
+      id,
+      cliente,
+      () => {
+        console.log("Cliente atualizado");
+      },
+      erro => {
+        console.log(erro);
+      }
+    );
   }
 
   cb_ok = data => {
@@ -98,7 +111,7 @@ class NovaAvaliacao extends React.Component {
           this.setState({
             avaliacao: {
               clientes: selectedRow,
-              data: values.data,
+              data: values.data.format("MM/YYYY"),
               resultado: 0
             },
             etapa: 2
@@ -302,9 +315,36 @@ class NovaAvaliacao extends React.Component {
       message.destroy();
       message.error("Preencha todas as avaliações");
     } else {
-      this.setState({  })
+      avaliacao.clientes.forEach(c => {
+        let cliente = {
+          nome: c.nome,
+          contato: c.contato,
+          dataCadastro: c.dataCadastro,
+          categoria: c.categoria,
+          ultimaAvaliacao: avaliacao.data
+        };
+
+        this.alterarCliente(c.id, cliente);
+      });
+
+      let total_participantes = avaliacao.clientes.length;
+      let promotores = 0;
+      let detratores = 0;
+
+      avaliacao.clientes.forEach(c => {
+        if (c.categoria >= 9) {
+          promotores++;
+        } else if (c.categoria <= 6) {
+          detratores++;
+        }
+      });
+
+      let nps = ((promotores - detratores) / total_participantes) * 100;
+
+      avaliacao.resultado = nps;
+      this.salvarAvaliacao(avaliacao);
     }
-  }
+  };
 
   renderFooterEtapa2() {
     return (

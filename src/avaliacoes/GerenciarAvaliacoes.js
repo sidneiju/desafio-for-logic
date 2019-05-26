@@ -58,7 +58,7 @@ class GerenciarAvaliacoes extends React.Component {
       {
         title: "DATA REFERENTE",
         dataIndex: "data",
-        width: "40%"
+        width: "40%",
       },
       {
         title: "RESULTADO",
